@@ -1,0 +1,6 @@
+[package]
+
+name = "toy-compiler"
+version = "0.0.1"
+authors = ["Dylan Braithwaite <dylanbraithwaite1@gmail.com>"]
+
