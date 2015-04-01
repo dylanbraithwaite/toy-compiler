@@ -1,26 +1,26 @@
-use lexer;
-use self::Token::*;
-use self::OperatorType::*;
+use lexer::LexState;
+use self::Tok::*;
+use self::OpType::*;
 
 #[derive(Debug)]
-pub enum Token {
-	Operator(OperatorType),
-	IntLitteral(u64),
+pub enum Tok {
+	Op(OpType),
+	Num(i64),
 }
 
 #[derive(Debug)]
-pub enum OperatorType {
+pub enum OpType {
 	Add,
 	Sub,
 }
 
-impl Token {
-	pub fn new(data: String, state: lexer::LexingState) -> Token {
+impl Tok {
+	pub fn new(data: String, state: LexState) -> Tok {
 		match state {
-			lexer::Num  => IntLitteral(data.parse().unwrap()),
-			lexer::Add  => Operator(Add),
-			lexer::Sub  => Operator(Sub),
-			_    => panic!(),
+			LexState::Num  => Num(data.parse().unwrap()),
+			LexState::Add  => Op(Add),
+			LexState::Sub  => Op(Sub),
+			_              => panic!(),
 		}
 	}
 }
