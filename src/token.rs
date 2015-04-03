@@ -6,6 +6,7 @@ use self::OpType::*;
 pub enum Tok {
 	Op(OpType),
 	Num(i64),
+	Id(String),
 }
 
 #[derive(Debug)]
