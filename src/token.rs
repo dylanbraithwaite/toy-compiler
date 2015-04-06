@@ -2,14 +2,15 @@ use lexer::LexState;
 use self::Tok::*;
 use self::OpType::*;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Tok {
 	Op(OpType),
 	Num(i64),
 	Id(String),
+	LineEnd,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum OpType {
 	Add,
 	Sub,
@@ -21,6 +22,7 @@ impl Tok {
 			LexState::Num  => Num(data.parse().unwrap()),
 			LexState::Add  => Op(Add),
 			LexState::Sub  => Op(Sub),
+			LexState::LineEnd => LineEnd,
 			_              => panic!(),
 		}
 	}

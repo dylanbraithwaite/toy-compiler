@@ -13,7 +13,7 @@ struct Parser {
 
 pub fn parse(toks: &[Tok]) -> i64 {
 	let mut p = Parser::new();
-	p.parse_expr(toks).codegen()
+	p.parse_block(toks).codegen()
 }
 
 
@@ -27,13 +27,20 @@ impl Parser {
 	}
 
 
+	fn parse_block(&mut self, toks: &[Tok]) -> Box<ast::Node> {
+		let raw_lines = toks.split(|tok| *tok == LineEnd);
+		let lines : Vec<Box<ast::Node>> = raw_lines.map(|line| self.parse_expr(line)).collect();
+		box ast::ScopeNode(lines)
+	}
+
+
 	fn parse_expr(&mut self, toks: &[Tok]) -> Box<ast::Node> {
 		match toks.first() {
-			Some(&Id(ref id))    =>  {
+			Some(&Id(ref id))    => {
 				let val = self.syms.get(id).val.clone();
 				self.parse_num(box ast::NumNode(val), toks.tail()) 
 			},
-			Some(&Num(num))  =>  self.parse_num(box ast::NumNode(num),                toks.tail()),
+			Some(&Num(num))  =>  self.parse_num(box ast::NumNode(num), toks.tail()),
 			_                =>  panic!(),
 		}
 	}
@@ -41,24 +48,10 @@ impl Parser {
 
 	fn parse_num(&mut self, first: Box<ast::Node>, others: &[Tok]) -> Box<ast::Node> {
 		match others.first() {
-			Some(&Op(Add))          =>  box ast::AddNode(first, self.parse_expr(others.tail()), false),
-			Some(&Op(Sub))          =>  box ast::AddNode(first, self.parse_expr(others.tail()), true),
-			_ if others.is_empty()  =>  first,
-			_                       =>  panic!(),
+			Some(&Op(Add))         =>  box ast::AddNode(first, self.parse_expr(others.tail()), false),
+			Some(&Op(Sub))         =>  box ast::AddNode(first, self.parse_expr(others.tail()), true),
+			None                   =>  first,
+			_                      =>  panic!(),
 		}
 	}
 }
-
-#[test]
-fn test() {
-	{
-	let input = [Num(7i64), Op(Add), Num(40i64), Op(Sub), Num(5i64)];
-	let output = parse(&input);
-	assert!(output==42i64);
-	}
-	{
-	let input = [Num(7i64), Op(Sub), Id("ONETHOUSAND".to_string())];
-	let output = parse(&input);
-	assert!(output== -993i64);
-	}
-} 
