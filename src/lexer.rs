@@ -9,6 +9,7 @@ pub enum LexState {
 	Sub,
 	LineEnd,
 	Id,
+	Assign,
 }
 
 pub fn lex(input: &str) -> Vec<token::Tok> {
@@ -40,6 +41,8 @@ fn lex_char(c: char, current_state: LexState) -> LexState {
 		('\n', _)                       =>  LineEnd,
 		('+', _)                        =>  Add,
 		('-', _)                        =>  Sub,
+		(':', _)                        =>  Assign,
+		('=', Assign)                   =>  None,
 		(x, Id)  if x.is_alphanumeric() =>  Id,
 		(x, _)   if x.is_alphabetic()   =>  Id,
 		(x,   _) if x.is_numeric()      =>  Num,
