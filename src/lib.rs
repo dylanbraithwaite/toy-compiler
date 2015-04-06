@@ -13,7 +13,7 @@ fn test_assign () {
 	let input =
 	r"piTimes100 := 314
 	  TWO := 2
-	  piTimes100 + TWO";
+	  piTimes100 + TWO  ";
 	let tokens = lexer::lex(input);
 	let output = parser::parse(tokens.as_slice());
 	assert_eq!(316, output);
