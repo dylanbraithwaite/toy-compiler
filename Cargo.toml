@@ -4,3 +4,9 @@ name = "toy-compiler"
 version = "0.0.2"
 authors = ["Dylan Braithwaite <dylanbraithwaite1@gmail.com>"]
 
+[[bin]]
+name = "compiler"
+
+[dependencies]
+regex = "0.1.8"
+regex_macros = "0.1.8"

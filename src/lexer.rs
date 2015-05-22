@@ -1,52 +1,53 @@
-use token;
-use self::LexState::*;
+use regex;
+use self::TokenType::*;
 
-#[derive(Copy, PartialEq)]
-pub enum LexState {
-	None,
-	Num,
-	Add,
-	Sub,
+#[derive(Clone, Copy, PartialEq)]
+pub enum TokenType {
 	LineEnd,
-	Id,
 	Assign,
+	Id,
+	Sub,
+	WhiteSpace,
+	Add,
+	Num,
 }
 
-pub fn lex(input: &str) -> Vec<token::Tok> {
-	let mut curr_state = None;
-	let mut tokens = Vec::new();
-	let mut curr_str = String::new();
-	
-	for c in input.chars() {
-		let new_state = lex_char(c, curr_state);
-		if curr_state != new_state {
-			if curr_state != None {
-				tokens.push(token::Tok::new(curr_str, curr_state));
+pub struct Token {
+	pub ttype: TokenType,
+	pub data: String,
+}
+
+pub type Tokens = Vec<Token>;
+pub type TokenSlice<'a> = &'a [Token];
+
+static regexes : &'static [(regex::Regex, TokenType)] = &[
+	(regex!(r";|\n"),                LineEnd),
+	(regex!(r"\+"),                  Add),
+	(regex!(r"-"),                   Sub),
+	(regex!(r":="),                  Assign),
+	(regex!(r"[:alpha:][:alnum:]*"), Id),
+	(regex!(r"[:digit:]+"),          Num),
+	(regex!(r"[:space:]+"),          WhiteSpace),
+];
+
+pub fn lex(mut input: &str) -> Tokens {
+
+	let mut output = Tokens::new();
+
+	while input.len() != 0 {
+		for &(ref pattern, token) in regexes {
+			if let Some((0, end)) = pattern.find(input) {
+
+				let head = &input[..end];
+				let tail = &input[end..];
+
+				output.push(Token{ttype: token, data: head.to_string()});
+				input = tail;
+			
+				break;
 			}
-			curr_str = String::new();
-			curr_state = new_state;
 		}
-		curr_str.push(c);
 	}
 
-	if curr_state != None {
-		tokens.push(token::Tok::new(curr_str, curr_state));
-	}
-
-	return tokens
-}
-
-fn lex_char(c: char, current_state: LexState) -> LexState {
-	match (c, current_state) { 
-		('\n', _)                       =>  LineEnd,
-		('+', _)                        =>  Add,
-		('-', _)                        =>  Sub,
-		(':', _)                        =>  Assign,
-		('=', Assign)                   =>  None,
-		(x, Id)  if x.is_alphanumeric() =>  Id,
-		(x, _)   if x.is_alphabetic()   =>  Id,
-		(x,   _) if x.is_numeric()      =>  Num,
-		(x,   _) if x.is_whitespace()   =>  None,
-		_                               =>  panic!(),
-	}
-}
+	output
+} 
